@@ -62,9 +62,15 @@ confirmed against a live account:
 - **Per-module energy is in Wh but labelled kWh.** A module reporting `todayPower: 109`
   corresponds to a device total of `0.109 kWh`.
 
+- **The account has exactly one valid token.** Signing in anywhere else -- the NEPViewer
+  app, the web UI, a second HA instance -- invalidates the token in use, which then answers
+  with HTTP 401 or code 223 ("Please log out and log in again"). The integration signs in
+  again and retries transparently, so opening the app just costs one extra sign-in. The
+  reverse is also true: when Home Assistant re-authenticates, the phone app gets logged out.
+
 Sign-in failures return a shrinking attempt counter ("remaining attempts: 4"), so a wrong
 password raises an auth error immediately rather than being retried, and forced re-logins
-are rate limited.
+for any other reason are rate limited.
 
 `tools/probe_api.py` dumps raw API responses for your own account if you want to explore
 further; it reads `NEPVIEWER_USER` / `NEPVIEWER_PASS` from the environment or `~/.env` and
@@ -76,6 +82,13 @@ This is a cloud integration: data is only as fresh and as available as NEPViewer
 NEP inverters post telemetry to `http://www.nepviewer.net/i.php` as an unencrypted 45-byte
 binary payload, so a DNS override plus [nep-local-gw](https://github.com/Nic0w/nep-local-gw)
 can capture it locally and publish to MQTT — documented for the BDM-400, and untested here.
+
+## HACS default store
+
+This repository is installable as a HACS *custom repository* today. Inclusion in the HACS
+default store additionally requires the `nepviewer` domain to be added to the
+[home-assistant/brands](https://github.com/home-assistant/brands) repository, so that check
+is skipped in CI until that PR is made.
 
 ## Tests
 

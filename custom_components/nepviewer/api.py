@@ -23,6 +23,7 @@ from .const import (
     CODE_OK,
     MIN_RELOGIN_INTERVAL,
     REQUEST_TIMEOUT,
+    TOKEN_INVALID_CODES,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -155,37 +156,43 @@ class NepViewerApi:
             await self.async_login()
 
         try:
-            body = await self._async_raw_post(path, payload)
+            body: dict[str, Any] | None = await self._async_raw_post(path, payload)
         except NepViewerAuthError:
-            body = {"code": None, "msg": "auth rejected"}
+            # The token was rejected outright (HTTP 401/403). Credentials are
+            # checked in async_login, so this is a dead token, not bad auth.
+            body = None
 
+        if body is not None and body.get("code") == CODE_OK:
+            return body.get("data") or {}
+
+        # The account holds exactly one valid token: signing in from the
+        # NEPViewer app, the web UI or another Home Assistant instance kills
+        # this one. That shows up either as HTTP 401 or as code 223, and the
+        # cure is a fresh sign-in, so those bypass the re-login throttle.
+        code = body.get("code") if body else None
+        msg = body.get("msg") if body else "token rejected"
+        invalidated = body is None or code in TOKEN_INVALID_CODES
+
+        if not invalidated and (
+            time.time() - self._last_login_attempt < MIN_RELOGIN_INTERVAL
+        ):
+            # Do not hammer sign-in for anything else: the backend locks
+            # accounts out after a few failed attempts, and a wedged backend
+            # would otherwise trigger a login on every poll.
+            raise NepViewerConnectionError(f"{path} returned code {code}: {msg}")
+
+        _LOGGER.debug(
+            "%s rejected (code %s, %s); retrying after re-login", path, code, msg
+        )
+        self._token = None
+        self._token_expires_at = 0
+        await self.async_login()
+
+        body = await self._async_raw_post(path, payload)
         if body.get("code") != CODE_OK:
-            # The API does not document an expiry code, so an unexpected code
-            # on an authenticated call is treated as a possible stale token:
-            # sign in once more and retry before giving up.
-            if time.time() - self._last_login_attempt < MIN_RELOGIN_INTERVAL:
-                # Do not hammer sign-in: the backend locks accounts out after
-                # a few failures, and a wedged backend would otherwise cause a
-                # login on every poll.
-                raise NepViewerConnectionError(
-                    f"{path} returned code {body.get('code')}: {body.get('msg')}"
-                )
-
-            _LOGGER.debug(
-                "%s returned code %s (%s); retrying after re-login",
-                path,
-                body.get("code"),
-                body.get("msg"),
+            raise NepViewerConnectionError(
+                f"{path} returned code {body.get('code')}: {body.get('msg')}"
             )
-            self._token = None
-            self._token_expires_at = 0
-            await self.async_login()
-            body = await self._async_raw_post(path, payload)
-
-            if body.get("code") != CODE_OK:
-                raise NepViewerConnectionError(
-                    f"{path} returned code {body.get('code')}: {body.get('msg')}"
-                )
 
         return body.get("data") or {}
 

@@ -19,8 +19,13 @@ CODE_OK: Final = 200
 # so a bad password must never be retried as if it were a transport error.
 AUTH_FAIL_CODES: Final = {202, 203, 204, 258}
 
+# The account only ever has one valid token: signing in anywhere else (the
+# NEPViewer app, the web UI, another HA instance) invalidates this one, and
+# authenticated calls then answer with this code.
+TOKEN_INVALID_CODES: Final = {223}
+
 # The backend locks an account after a handful of failed sign-ins, so a forced
-# re-login is not attempted more often than this.
+# re-login for any *other* reason is not attempted more often than this.
 MIN_RELOGIN_INTERVAL: Final = 300
 
 REQUEST_TIMEOUT: Final = 20
