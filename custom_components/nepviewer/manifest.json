@@ -1,0 +1,14 @@
+{
+  "domain": "nepviewer",
+  "name": "NEPViewer",
+  "codeowners": ["@kaibae19"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/kaibae19/ha-nepviewer",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/kaibae19/ha-nepviewer/issues",
+  "loggers": ["custom_components.nepviewer"],
+  "requirements": [],
+  "version": "0.1.0"
+}

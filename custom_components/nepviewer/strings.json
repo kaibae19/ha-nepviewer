@@ -1,0 +1,69 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "NEPViewer account",
+        "description": "Sign in with the credentials you use for the NEPViewer app or user.nepviewer.com.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate NEPViewer",
+        "description": "The stored credentials for {email} were rejected. Enter the password again.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach the NEPViewer API.",
+      "invalid_auth": "Invalid email or password.",
+      "no_devices": "Sign-in worked, but no inverters are registered to this account."
+    },
+    "abort": {
+      "already_configured": "This NEPViewer account is already set up.",
+      "reauth_successful": "Re-authentication was successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "NEPViewer options",
+        "data": {
+          "scan_interval_minutes": "Polling interval",
+          "stale_after_minutes": "Treat readings as stale after"
+        },
+        "data_description": {
+          "scan_interval_minutes": "How often to poll the cloud. The inverters upload every few minutes, so shorter intervals mostly add requests.",
+          "stale_after_minutes": "The cloud keeps serving the last reading after an inverter goes offline. Power readings older than this are reported as unknown instead of holding a stale value overnight."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "reporting": { "name": "Reporting" },
+      "problem": { "name": "Problem" }
+    },
+    "sensor": {
+      "power": { "name": "Power" },
+      "energy_today": { "name": "Energy today" },
+      "energy_yesterday": { "name": "Energy yesterday" },
+      "energy_month": { "name": "Energy this month" },
+      "energy_year": { "name": "Energy this year" },
+      "energy_total": { "name": "Energy total" },
+      "last_report": { "name": "Last report" },
+      "status": { "name": "Status" },
+      "alert_code": { "name": "Alert code" },
+      "alert_title": { "name": "Alert" },
+      "co2_saved": { "name": "CO2 saved" },
+      "home_power": { "name": "Home power" },
+      "grid_power": { "name": "Grid power" },
+      "module_power": { "name": "Input {input} power" },
+      "module_energy_today": { "name": "Input {input} energy today" },
+      "module_energy_total": { "name": "Input {input} energy total" }
+    }
+  }
+}
