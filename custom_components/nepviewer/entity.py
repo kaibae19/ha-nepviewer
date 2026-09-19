@@ -44,8 +44,5 @@ class NepViewerEntity(CoordinatorEntity[NepViewerCoordinator]):
                 info["model"] = device.model
             if device.sw_version:
                 info["sw_version"] = device.sw_version
-            site = device.listing.get("siteName")
-            if site:
-                info["suggested_area"] = site
             info["configuration_url"] = "https://user.nepviewer.com"
         return info
